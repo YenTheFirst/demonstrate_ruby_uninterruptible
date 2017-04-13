@@ -6,6 +6,7 @@ Basic demonstration of uninterruptible states in native extensions to ruby.
 ruby extconf.rb
 make
 ruby demonstrate.rb
+ruby demonstrate_concurrency.rb
 ```
 
 # sample output
@@ -54,3 +55,66 @@ starting block call
 
 Note that SIGINT is appropriately interrupting an OS sleep, and a busy loop of Ruby code.
 However, it does not interrupt a busy loop that takes place in C code.
+
+sample output of demonstrate\_concurrency.rb
+
+```
+testing ruby os sleep
+starting threads
+5.1932e-05: waiting on threads
+starting thread 1
+starting thread 2
+10.000443724: finished thread 1
+10.00030206: finished thread 2
+10.000717332: threads done
+
+testing ruby busy sleep
+starting threads
+0.000285329: waiting on threads
+starting thread 2
+starting thread 1
+busy-slept for 1
+busy-slept for 1
+busy-slept for 2
+busy-slept for 2
+busy-slept for 3
+busy-slept for 3
+busy-slept for 4
+busy-slept for 4
+busy-slept for 5
+busy-slept for 5
+busy-slept for 6
+busy-slept for 6
+busy-slept for 7
+busy-slept for 7
+busy-slept for 8
+busy-slept for 8
+busy-slept for 9
+busy-slept for 9
+busy-slept for 10
+10.012047707: finished thread 2
+busy-slept for 10
+10.000018174: finished thread 1
+10.100020619: threads done
+
+testing c os sleep
+starting threads
+0.000496377: waiting on threads
+starting thread 2
+starting thread 1
+20.000774417: finished thread 2
+10.000446722: finished thread 1
+20.001522869: threads done
+
+testing c busy sleep
+starting threads
+0.000159705: waiting on threads
+starting thread 1
+starting thread 2
+19.430273335: finished thread 1
+10.000060785: finished thread 2
+19.430646684: threads done
+```
+
+Note how the ruby busy loops share the GIL, and both do their work simultaneously.
+The C busy loops do not share the GIL, and end up doing their work in serial.
